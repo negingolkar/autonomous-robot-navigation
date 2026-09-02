@@ -7,7 +7,7 @@ from path_planner import PathPlanner
 world = GridWorld()
 planner = PathPlanner(world)
 
-path = planner.find_path(
+path, nodes_explored = planner.find_path(
     world.robot_position,
     world.goal_position
 )
@@ -42,6 +42,7 @@ if path:
 
 # Draw robot
 robot_x, robot_y = world.robot_position
+
 ax.scatter(
     robot_x,
     robot_y,
@@ -51,6 +52,7 @@ ax.scatter(
 
 # Draw goal
 goal_x, goal_y = world.goal_position
+
 ax.scatter(
     goal_x,
     goal_y,
@@ -58,7 +60,7 @@ ax.scatter(
     s=400
 )
 
-ax.set_title("Autonomous Robot Navigation")
+ax.set_title("Autonomous Robot Navigation - BFS")
 ax.set_xlabel("X")
 ax.set_ylabel("Y")
 
@@ -69,4 +71,3 @@ plt.savefig(
 )
 
 plt.show()
-
