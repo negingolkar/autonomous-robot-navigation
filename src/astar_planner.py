@@ -1,7 +1,7 @@
-from collections import deque
+import heapq
 
 
-class PathPlanner:
+class AStarPlanner:
     def __init__(self, grid_world):
         self.grid_world = grid_world
 
@@ -35,37 +35,64 @@ class PathPlanner:
 
         return neighbors
 
+    def heuristic(self, position, goal):
+        x1, y1 = position
+        x2, y2 = goal
+
+        return abs(x1 - x2) + abs(y1 - y2)
+
     def find_path(self, start, goal):
-        queue = deque([start])
-        visited = {start}
-        parent = {start: None}
+        open_set = []
+
+        heapq.heappush(open_set, (0, start))
+
+        came_from = {}
+        g_score = {start: 0}
 
         nodes_explored = 0
 
-        while queue:
-            current = queue.popleft()
+        while open_set:
+            _, current = heapq.heappop(open_set)
+
             nodes_explored += 1
 
             if current == goal:
-                path = self.reconstruct_path(parent, goal)
+                path = self.reconstruct_path(came_from, goal)
+
                 return path, nodes_explored
 
             for neighbor in self.get_neighbors(current):
-                if neighbor not in visited:
-                    visited.add(neighbor)
-                    parent[neighbor] = current
-                    queue.append(neighbor)
+
+                tentative_g_score = g_score[current] + 1
+
+                if (
+                    neighbor not in g_score
+                    or tentative_g_score < g_score[neighbor]
+                ):
+                    came_from[neighbor] = current
+                    g_score[neighbor] = tentative_g_score
+
+                    f_score = (
+                        tentative_g_score
+                        + self.heuristic(neighbor, goal)
+                    )
+
+                    heapq.heappush(
+                        open_set,
+                        (f_score, neighbor)
+                    )
 
         return None, nodes_explored
 
-    def reconstruct_path(self, parent, goal):
+    def reconstruct_path(self, came_from, goal):
         path = []
         current = goal
 
-        while current is not None:
+        while current in came_from:
             path.append(current)
-            current = parent[current]
+            current = came_from[current]
 
+        path.append(current)
         path.reverse()
 
         return path
@@ -75,7 +102,7 @@ if __name__ == "__main__":
     from grid_world import GridWorld
 
     world = GridWorld()
-    planner = PathPlanner(world)
+    planner = AStarPlanner(world)
 
     path, nodes_explored = planner.find_path(
         world.robot_position,
