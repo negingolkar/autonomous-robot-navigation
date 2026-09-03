@@ -49,11 +49,16 @@ class AStarPlanner:
         came_from = {}
         g_score = {start: 0}
 
+        visited = set()
         nodes_explored = 0
 
         while open_set:
             _, current = heapq.heappop(open_set)
 
+            if current in visited:
+                continue
+
+            visited.add(current)
             nodes_explored += 1
 
             if current == goal:
@@ -62,6 +67,9 @@ class AStarPlanner:
                 return path, nodes_explored
 
             for neighbor in self.get_neighbors(current):
+
+                if neighbor in visited:
+                    continue
 
                 tentative_g_score = g_score[current] + 1
 
